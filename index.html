@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geoffrey</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background-color: #1a1a1a;
+      color: #d4c5a9;
+      font-family: 'Georgia', serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #crest {
+      font-size: 14px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #8a7a5a;
+      margin-bottom: 8px;
+    }
+
+    #title {
+      font-size: 42px;
+      font-weight: normal;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      color: #d4c5a9;
+      margin-bottom: 60px;
+    }
+
+    #speaker-select {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 50px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .speaker-btn {
+      background: transparent;
+      border: 1px solid #4a3f2a;
+      color: #8a7a5a;
+      padding: 8px 20px;
+      font-family: 'Georgia', serif;
+      font-size: 13px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+
+    .speaker-btn:hover, .speaker-btn.active {
+      border-color: #d4c5a9;
+      color: #d4c5a9;
+      background: rgba(212, 197, 169, 0.05);
+    }
+
+    #orb-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin-bottom: 50px;
+      cursor: pointer;
+    }
+
+    #orb {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #4a3f2a, #1a1510);
+      border: 1px solid #4a3f2a;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #orb-inner {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #8a7a5a, #4a3f2a);
+      transition: all 0.3s ease;
+    }
+
+    #orb.listening {
+      border-color: #d4c5a9;
+      box-shadow: 0 0 30px rgba(212, 197, 169, 0.2);
+      animation: pulse 1.5s infinite;
+    }
+
+    #orb.speaking {
+      border-color: #8a7a5a;
+      box-shadow: 0 0 40px rgba(138, 122, 90, 0.3);
+      animation: pulse 0.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(212, 197, 169, 0.2); }
+      50% { box-shadow: 0 0 60px rgba(212, 197, 169, 0.4); }
+    }
+
+    #status {
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #4a3f2a;
+      margin-bottom: 40px;
+      min-height: 20px;
+      transition: color 0.3s ease;
+      cursor: pointer;
+    }
+
+    #status.active { color: #8a7a5a; }
+
+    #response-text {
+      max-width: 600px;
+      text-align: center;
+      font-size: 16px;
+      line-height: 1.8;
+      color: #8a7a5a;
+      font-style: italic;
+      min-height: 60px;
+      padding: 0 40px;
+      transition: opacity 0.5s ease;
+    }
+
+    #divider {
+      width: 60px;
+      height: 1px;
+      background: #4a3f2a;
+      margin: 40px auto;
+    }
+
+    #instruction {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #4a3f2a;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="crest">&#9670; Est. 2024 &#9670;</div>
+  <div id="title">Geoffrey</div>
+
+  <div id="speaker-select">
+    <button class="speaker-btn active" onclick="setSpeaker('Parker')">Parker</button>
+    <button class="speaker-btn" onclick="setSpeaker('Courtney')">Courtney</button>
+    <button class="speaker-btn" onclick="setSpeaker('Xander')">Xander</button>
+    <button class="speaker-btn" onclick="setSpeaker('Ripley')">Ripley</button>
+    <button class="speaker-btn" onclick="setSpeaker('Briar')">Briar</button>
+  </div>
+
+  <div id="orb-container" onclick="toggleListening()">
+    <div id="orb">
+      <div id="orb-inner"></div>
+    </div>
+  </div>
+
+  <div id="status">Touch to speak</div>
+  <div id="response-text"></div>
+  <div id="divider"></div>
+  <div id="instruction">Touch the orb to summon Geoffrey</div>
+
+  <div id="text-input-container" style="margin-top: 30px; display: flex; gap: 10px; align-items: center;">
+    <input type="text" id="text-input" placeholder="Type to Geoffrey..."
+      style="background: transparent; border: 1px solid #4a3f2a; color: #d4c5a9;
+      padding: 10px 20px; font-family: 'Georgia', serif; font-size: 14px;
+      letter-spacing: 1px; width: 300px; outline: none;">
+    <button onclick="sendText()"
+      style="background: transparent; border: 1px solid #4a3f2a; color: #8a7a5a;
+      padding: 10px 20px; font-family: 'Georgia', serif; font-size: 13px;
+      letter-spacing: 2px; cursor: pointer; text-transform: uppercase;">
+      Send
+    </button>
+  </div>
+
+  <script>
+    let currentSpeaker = 'Parker';
+    let isListening = false;
+    let recognition = null;
+    let micGranted = false;
+
+    window.onload = function() {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+          stream.getTracks().forEach(track => track.stop());
+          micGranted = true;
+          setStatus('Touch to speak');
+        })
+        .catch(err => {
+          micGranted = false;
+          setStatus('Tap here to enable microphone');
+          document.getElementById('status').onclick = requestMic;
+        });
+    };
+
+    function requestMic() {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+          stream.getTracks().forEach(track => track.stop());
+          micGranted = true;
+          setStatus('Touch to speak');
+          document.getElementById('status').onclick = null;
+        })
+        .catch(err => {
+          setStatus('Microphone access required');
+        });
+    }
+
+    function setSpeaker(name) {
+      currentSpeaker = name;
+      document.querySelectorAll('.speaker-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent === name);
+      });
+    }
+
+    function sendText() {
+      const input = document.getElementById('text-input');
+      const message = input.value.trim();
+      if (!message) return;
+      input.value = '';
+      sendToGeoffrey(message);
+    }
+
+    function toggleListening() {
+      if (!micGranted) {
+        requestMic();
+        return;
+      }
+      if (isListening) {
+        stopListening();
+      } else {
+        startListening();
+      }
+    }
+
+    function startListening() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        setStatus('Speech not supported');
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        isListening = true;
+        setOrb('listening');
+        setStatus('Listening...');
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        stopListening();
+        sendToGeoffrey(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        stopListening();
+        setStatus('Pardon? Please try again.');
+        console.error('Speech error:', event.error);
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        if (document.getElementById('orb').classList.contains('listening')) {
+          setOrb('idle');
+          setStatus('Touch to speak');
+        }
+      };
+
+      recognition.start();
+    }
+
+    function stopListening() {
+      if (recognition) recognition.stop();
+      isListening = false;
+    }
+
+    function sendToGeoffrey(message) {
+      setOrb('speaking');
+      setStatus('One moment...');
+      setResponse('');
+
+      google.script.run
+        .withSuccessHandler(handleResponse)
+        .withFailureHandler(handleError)
+        .processMessage(message, currentSpeaker);
+    }
+
+    function handleResponse(result) {
+      if (result.success) {
+        setResponse(result.text);
+        playAudio(result.audio);
+      } else {
+        setOrb('idle');
+        setStatus('Error — see response');
+        setResponse(result.error);
+        console.error(result.error);
+      }
+    }
+
+    function playAudio(base64Audio) {
+      const audio = new Audio('data:audio/mpeg;base64,' + base64Audio);
+      audio.onplay = () => {
+        setOrb('speaking');
+        setStatus('Geoffrey speaks...');
+      };
+      audio.onended = () => {
+        setOrb('idle');
+        setStatus('Touch to speak');
+      };
+      audio.play();
+    }
+
+    function handleError(error) {
+      setOrb('idle');
+      setStatus('Touch to speak');
+      console.error(error);
+    }
+
+    function setOrb(state) {
+      const orb = document.getElementById('orb');
+      orb.className = state === 'idle' ? '' : state;
+    }
+
+    function setStatus(text) {
+      const el = document.getElementById('status');
+      el.textContent = text;
+      el.className = text !== 'Touch to speak' ? 'active' : '';
+    }
+
+    function setResponse(text) {
+      const el = document.getElementById('response-text');
+      el.style.opacity = 0;
+      setTimeout(() => {
+        el.textContent = text;
+        el.style.opacity = 1;
+      }, 300);
+    }
+  </script>
+</body>
+</html>
