@@ -185,6 +185,8 @@
   </div>
 
   <script>
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-ZvQVZ64nnAs9J4jr5DrMiU5_TrrJ-KD0G_laeHt-SUwqhZC7R5flC7a8jGBoEZEo/exec';
+    
     let currentSpeaker = 'Parker';
     let isListening = false;
     let recognition = null;
@@ -296,10 +298,12 @@
       setStatus('One moment...');
       setResponse('');
 
-      google.script.run
-        .withSuccessHandler(handleResponse)
-        .withFailureHandler(handleError)
-        .processMessage(message, currentSpeaker);
+      const url = `${APPS_SCRIPT_URL}?message=${encodeURIComponent(message)}&speaker=${encodeURIComponent(currentSpeaker)}`;
+      
+      fetch(url)
+        .then(response => response.json())
+        .then(result => handleResponse(result))
+        .catch(error => handleError(error));
     }
 
     function handleResponse(result) {
@@ -309,7 +313,7 @@
       } else {
         setOrb('idle');
         setStatus('Error — see response');
-        setResponse(result.error);
+        setResponse(result.error || 'An error occurred');
         console.error(result.error);
       }
     }
@@ -329,7 +333,8 @@
 
     function handleError(error) {
       setOrb('idle');
-      setStatus('Touch to speak');
+      setStatus('Error — see response');
+      setResponse('Failed to reach Geoffrey: ' + error.toString());
       console.error(error);
     }
 
